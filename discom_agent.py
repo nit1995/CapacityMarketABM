@@ -3,8 +3,8 @@ from mesa import Agent
 import random
 
 class DISCOMAgent(Agent):
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
+    def __init__(self, model):
+        super().__init__(model)
         self.forecasted_peak_demand = random.uniform(500, 1000)
         self.procured_capacity = 0
         self.total_cost = 0
