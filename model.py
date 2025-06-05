@@ -8,6 +8,7 @@ from collections import defaultdict
 
 class CapacityMarketModel(Model):
     def __init__(self, num_discoms, num_generators, years, market_type="centralized"):
+        super().__init__()
         self.num_discoms = num_discoms
         self.num_generators = num_generators
         self.years = years
