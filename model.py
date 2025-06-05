@@ -1,6 +1,5 @@
 
 from mesa import Model
-from mesa.time import BaseScheduler
 from discom_agent import DISCOMAgent
 from generator_agent import GeneratorAgent
 from regulator_agent import RegulatorAgent
@@ -13,7 +12,6 @@ class CapacityMarketModel(Model):
         self.num_generators = num_generators
         self.years = years
         self.market_type = market_type
-        self.schedule = BaseScheduler(self)
         self.year = 0
 
         self.metrics = {
@@ -25,32 +23,29 @@ class CapacityMarketModel(Model):
             'technology_wise_capacity': []
         }
 
-        self.regulator = RegulatorAgent(self.next_id(), self, market_type)
-        self.schedule.add(self.regulator)
+        self.regulator = RegulatorAgent(self, market_type)
 
         for i in range(num_discoms):
-            agent = DISCOMAgent(self.next_id(), self)
-            self.schedule.add(agent)
+            DISCOMAgent(self)
 
         for j in range(num_generators):
-            agent = GeneratorAgent(self.next_id(), self)
-            self.schedule.add(agent)
+            GeneratorAgent(self)
 
     def step(self):
         print(f"\n--- Year {self.year} ---")
-        pre_agents = len([a for a in self.schedule.agents if isinstance(a, GeneratorAgent)])
-        self.schedule.step()
-        post_agents = len([a for a in self.schedule.agents if isinstance(a, GeneratorAgent)])
+        pre_agents = len([a for a in self.agents if isinstance(a, GeneratorAgent)])
+        self.agents.shuffle_do("step")
+        post_agents = len([a for a in self.agents if isinstance(a, GeneratorAgent)])
 
-        total_capacity = sum(a.capacity for a in self.schedule.agents if isinstance(a, GeneratorAgent))
-        discom_costs = sum(a.total_cost for a in self.schedule.agents if isinstance(a, DISCOMAgent))
+        total_capacity = sum(a.capacity for a in self.agents if isinstance(a, GeneratorAgent))
+        discom_costs = sum(a.total_cost for a in self.agents if isinstance(a, DISCOMAgent))
         unserved = sum(
             max(0, a.forecasted_peak_demand * 1.1 - a.procured_capacity)
-            for a in self.schedule.agents if isinstance(a, DISCOMAgent)
+            for a in self.agents if isinstance(a, DISCOMAgent)
         )
 
         techwise = defaultdict(float)
-        for a in self.schedule.agents:
+        for a in self.agents:
             if isinstance(a, GeneratorAgent):
                 techwise[a.technology] += a.capacity
 
@@ -65,6 +60,6 @@ class CapacityMarketModel(Model):
 
     def report_results(self):
         print("\n--- Final Report ---")
-        for agent in self.schedule.agents:
+        for agent in self.agents:
             if isinstance(agent, DISCOMAgent):
                 print(f"DISCOM {agent.unique_id}: Total Cost = {agent.total_cost:.2f}, Procured = {agent.procured_capacity:.2f}, Demand = {agent.forecasted_peak_demand:.2f}")

@@ -3,13 +3,13 @@ from mesa import Agent
 import random
 
 class RegulatorAgent(Agent):
-    def __init__(self, unique_id, model, market_type):
-        super().__init__(unique_id, model)
+    def __init__(self, model, market_type):
+        super().__init__(model)
         self.reserve_margin = 0.1
         self.market_type = market_type
 
     def centralized_auction(self, discom, needed_capacity):
-        generators = [a for a in self.model.schedule.agents if hasattr(a, 'bid_price')]
+        generators = [a for a in self.model.agents if hasattr(a, 'bid_price')]
         generators.sort(key=lambda g: g.bid_price())
 
         total = 0
@@ -33,7 +33,7 @@ class RegulatorAgent(Agent):
         return total, cost
 
     def bilateral_contracts(self, discom, needed_capacity):
-        generators = [a for a in self.model.schedule.agents if hasattr(a, 'bid_price')]
+        generators = [a for a in self.model.agents if hasattr(a, 'bid_price')]
         random.shuffle(generators)
         total = 0
         cost = 0
