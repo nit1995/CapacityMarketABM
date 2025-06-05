@@ -43,3 +43,8 @@ plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+# After creating each figure
+plt.savefig("plot_metrics.png")       # for the first plot
+plt.savefig("plot_technology.png")    # for the second plot
+
